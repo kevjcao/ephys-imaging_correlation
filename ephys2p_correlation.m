@@ -12,7 +12,7 @@ expparameters = str2double(inputdlg(prompt, dlgtitle, dims));  %(1,1) is framera
 %% process ephys data
 
 rawephys = [unnamed1(:,1)/1000 unnamed1(:,2)];
-rawdFF = [(unnamed(:,1)/expparameters(1,1)) + expparameters(2,1) unnamed(:,2)];
+rawdFF = [(unnamed(:,1)/expparameters(1,1)) + expparameters(2,1) unnamed(:,2)]; %creates new data array for dF/F data that applies the sync delay from patch software
 
 %% plot data
 
@@ -27,9 +27,24 @@ ylabel('dF/F');
 xlabel('Time (s)')
 hold off;
 
-%% replot dimensions
-prompt = {'Width (pixels)', 'Height (pixels)', 'Time window (s)', 'mV scale min', 'mV scale max', 'dF/F scale min', 'dF/F scale max'};
+%% set pub figure windows
+prompt = {'Time window start (s)', 'Time window end (s)', 'mV scale min', 'mV scale max', 'dF/F scale min', 'dF/F scale max'};
 dlgtitle = 'Figure properties';
 dims = [1 50];
 figparameters = str2double(inputdlg(prompt, dlgtitle, dims));
 
+%% plot pub figure
+
+pubfig = figure(2);
+hold on;
+yyaxis left
+plot(rawephys(:,1), rawephys(:,2));
+ylim([figparameters(3,1) figparameters(4,1)])
+ylabel('mV');
+yyaxis right
+plot(rawdFF(:,1), rawdFF(:,2));
+ylim([figparameters(5,1) figparameters(6,1)])
+ylabel('dF/F');
+xlim([figparameters(1,1) figparameters(2,1)])
+xlabel('Time (s)')
+hold off;
