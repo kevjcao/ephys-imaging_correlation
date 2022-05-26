@@ -57,3 +57,7 @@ hold off;
 % xlim([figparameters(1,1) figparameters(2,1)])
 % xlabel('Time (s)')
 % hold off;
+
+%% calculate nearest peak to stim
+
+
