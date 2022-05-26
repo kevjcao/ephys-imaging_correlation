@@ -1,4 +1,4 @@
-# ephys-patch_correlation
+# ephys-imaging_correlation
 Quick correlation script to align whole-cell and cell-attached patch clamp data to 2-photon imaging data from ScanImage. 
 
 Trigger sync performed on digitizer so only the timing offset is needed. 
