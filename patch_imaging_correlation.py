@@ -9,6 +9,8 @@ import matplotlib.pyplot as plt
 import scipy.io as sp
 import pandas as pd
 from scipy import signal
+from scipy.signal import find_peaks
+
 
 ## set variables
 # hardcode some variables for now
@@ -43,30 +45,34 @@ ax2.set_ylabel('F (a.u.)')
 plt.show()
 
 ## calculate power spectrum of ephys data
-timestep = 1 / (0.25 / 1000)  # from digitizer; double check for errors
+timestep = 1 / (0.25 / 1000)  # sampling frequency (Hz), from digitizer; double check for errors
 
 freq, Psden = signal.welch(ephys[:, 1], timestep, nperseg=4096)  #welch's periodogram w/ overlapping windowing
 plt.plot(freq, Psden)
-plt.xlim(0,100)
+plt.xlim(0,70)
 plt.xlabel('frequency [Hz]')
 plt.ylabel('PSD [V**2/Hz]')
 plt.show()
 
-# raw fft - check for 60Hz noise
-# ps = np.abs(np.fft.fft(ephys[:, 1])) ** 2
-# freqs = np.fft.fftfreq(ephys[:, 1].size, timestep)
-# idx = np.argsort(freqs)
-# plt.plot(freqs[idx], ps[idx])
-# plt.xlabel('freq (Hz)')
-# plt.yscale('log')
-# plt.xscale('log')
-# # plt.xlim(0,int(timestep)/2)
-# plt.show()
+## detect and filter 60Hz noise
+# Create/view notch filter
+notch_freq = 60.0  # Frequency to be removed from signal (Hz)
+quality_factor = 30.0  # Quality factor
+b_notch, a_notch = signal.iirnotch(notch_freq, quality_factor, timestep)
+freq, h = signal.freqz(b_notch, a_notch, fs = timestep)
+plt.figure('filter')
+plt.plot( freq, 20*np.log10(abs(h)))
+plt.show()
+
+# apply notch filter to signal
+y_notched = signal.filtfilt(b_notch, a_notch, y_pure)
+
+# plot notch-filtered version of signal
+plt.subplot(212)
+plt.plot(t, y_notched, color = 'r')
 
 ## check correlation between ephys and imaging
 # **caution - requires resampling of ephys due to lower sampling rate of imaging data
-
-## try pandas dataframe
 # create pandas dataframe (df) for each set
 
 df_ephys = pd.DataFrame(data=ephys[:, 1], index=pd.to_timedelta((ephys[:, 0]/1000), unit='s'))
@@ -99,3 +105,16 @@ ax_gcp.margins(0, 0.1)
 ax_corr.margins(0, 0.1)
 fig_crosscorr.tight_layout()
 plt.show()
+
+# indices, props = find_peaks(peaks, threshold=1)
+# maxima_heights = props[‘peak_heights’]
+#
+#
+# def peak_calculator(self):
+#
+#     global peaks
+#     self.indices = find_peaks(peaks, threshold=1)[0]
+#
+#     peaks_min = peaks * -1
+#     indices_min = find_peaks(peaks_min, threshold=1)[0]
+#
